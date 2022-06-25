@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "./node_modules/.bin/nodemon -L express_server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -17,7 +18,10 @@
     "url": "https://github.com/LIZXP/tinyapp/issues"
   },
   "homepage": "https://github.com/LIZXP/tinyapp#readme",
-  "devDependencies": {
+  "dependencies": {
     "express": "^4.18.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.18"
   }
 }
