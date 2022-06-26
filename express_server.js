@@ -1,7 +1,10 @@
+//import external modules
 const express = require("express");
+const bodyParser = require("body-parser");
 app = express();
 PORT = 8080;
 app.set("view engine", "ejs"); //set the ejs as view engine
+app.use(bodyParser.urlencoded({ extended: true }));
 
 const urlDatabase = {
   b2xVn2: "http://www.lighthouselabs.ca",
@@ -24,6 +27,15 @@ app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase };
   res.render("urls_index", templateVars);
 }); //set the urls tag and have the ejs render in the views folder
+
+app.post("/urls", (req, res) => {
+  console.log(req.body); // Log the POST request body to the console
+  res.send("Ok"); // Respond with 'Ok' (we will replace this)
+});
+
+app.get("/urls/new", (req, res) => {
+  res.render("urls_new");
+}); // generate a new short URL from a long URL
 
 app.get("/urls/:shortURL", (req, res) => {
   const templateVars = {
