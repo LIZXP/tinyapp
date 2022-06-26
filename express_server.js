@@ -39,11 +39,6 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 }); //set the urls tag and have the ejs render in the views folder
 
-app.post("/urls", (req, res) => {
-  console.log(req.body); // Log the POST request body to the console
-  res.send("Ok"); // Respond with 'Ok' (we will replace this)
-});
-
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 }); // generate a new short URL from a long URL
@@ -61,6 +56,14 @@ app.get("/urls/:shortURL", (req, res) => {
   };
   res.render("urls_show", templateVars);
 });
+
+app.post("/urls/:shortURL", (req, res) => {
+  const { shortURL } = req.params;
+  let longURL = req.body.longURL;
+  //console.log(req.body.longURL);
+  urlDatabase[shortURL] = longURL;
+  res.redirect("/urls/");
+}); // switch the new longURL fetched from req.body to replace the one in urlDatabase
 
 app.post("/urls/:shortURL/delete", (req, res) => {
   const { shortURL } = req.params;
