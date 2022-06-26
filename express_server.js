@@ -52,7 +52,7 @@ app.get("/u/:shortURL", (req, res) => {
   const { shortURL } = req.params;
   const longURL = urlDatabase[shortURL];
   res.redirect(longURL);
-});
+}); // redirect to the longURL page using shortURL
 
 app.get("/urls/:shortURL", (req, res) => {
   const templateVars = {
@@ -61,6 +61,12 @@ app.get("/urls/:shortURL", (req, res) => {
   };
   res.render("urls_show", templateVars);
 });
+
+app.post("/urls/:shortURL/delete", (req, res) => {
+  const { shortURL } = req.params;
+  delete urlDatabase[shortURL];
+  res.redirect("/urls");
+}); //Use Javascript's delete operator to remove the URL
 
 app.listen(PORT, () => {
   console.log("Server is listening on PORT: ", PORT);
