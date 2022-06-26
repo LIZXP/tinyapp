@@ -28,6 +28,17 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 }); //set the urls tag and have the ejs render in the views folder
 
+function generateRandomString() {
+  let result = "";
+  const characters =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const charlen = characters.length;
+  for (let i = 0; i < 6; i++) {
+    result += characters.charAt(Math.floor(Math.random() * charlen));
+  }
+  return result;
+} // generate random number
+
 app.post("/urls", (req, res) => {
   console.log(req.body); // Log the POST request body to the console
   res.send("Ok"); // Respond with 'Ok' (we will replace this)
