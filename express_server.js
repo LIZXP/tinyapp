@@ -60,7 +60,7 @@ app.get("/urls/:shortURL", (req, res) => {
 app.post("/urls/:shortURL", (req, res) => {
   const { shortURL } = req.params;
   let longURL = req.body.longURL;
-  //console.log(req.body.longURL);
+  //console.log(req.body);
   urlDatabase[shortURL] = longURL;
   res.redirect("/urls/");
 }); // switch the new longURL fetched from req.body to replace the one in urlDatabase
