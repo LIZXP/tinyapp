@@ -1,10 +1,12 @@
 //import external modules
 const express = require("express");
 const bodyParser = require("body-parser");
+const cookieParser = require("cookie-parser");
 app = express();
 PORT = 8080;
 app.set("view engine", "ejs"); //set the ejs as view engine
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 function generateRandomString() {
   let result = "";
@@ -28,19 +30,17 @@ app.get("/urls.json", (req, res) => {
 
 app.get("/", (req, res) => {
   res.send("Hello!");
+  res.redirect("/login");
 }); //set the main tag
 
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
-}); //set the hello tag
-
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase };
+  const templateVars = { urls: urlDatabase, username: req.cookies["username"] };
   res.render("urls_index", templateVars);
 }); //set the urls tag and have the ejs render in the views folder
 
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  const templateVars = { username: req.cookies["username"] };
+  res.render("urls_new", templateVars);
 }); // generate a new short URL from a long URL
 
 app.get("/u/:shortURL", (req, res) => {
@@ -53,8 +53,24 @@ app.get("/urls/:shortURL", (req, res) => {
   const templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL],
+    username: req.cookies["username"],
   };
   res.render("urls_show", templateVars);
+});
+
+app.get("*", (req, res) => {
+  res.redirect("/urls");
+}); //set the hello tag
+
+app.post("/login", (req, res) => {
+  console.log();
+  res.cookie("username", req.body.username);
+  res.redirect("/urls");
+});
+
+app.post("/logout", (req, res) => {
+  res.clearCookie("username");
+  res.redirect("/urls");
 });
 
 app.post("/urls/:shortURL", (req, res) => {
