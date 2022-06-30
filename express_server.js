@@ -7,6 +7,7 @@ PORT = 8080;
 app.set("view engine", "ejs"); //set the ejs as view engine
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
+const users = {};
 
 function generateRandomString() {
   let result = "";
@@ -29,7 +30,6 @@ app.get("/urls.json", (req, res) => {
 }); // this will turns the object into json file
 
 app.get("/", (req, res) => {
-  res.send("Hello!");
   res.redirect("/login");
 }); //set the main tag
 
@@ -37,6 +37,11 @@ app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase, username: req.cookies["username"] };
   res.render("urls_index", templateVars);
 }); //set the urls tag and have the ejs render in the views folder
+
+app.get("/register", (req, res) => {
+  const templateVars = { urls: urlDatabase, username: req.cookies["username"] };
+  res.render("urls_register", templateVars);
+});
 
 app.get("/urls/new", (req, res) => {
   const templateVars = { username: req.cookies["username"] };
@@ -63,7 +68,6 @@ app.get("*", (req, res) => {
 }); //set the hello tag
 
 app.post("/login", (req, res) => {
-  console.log();
   res.cookie("username", req.body.username);
   res.redirect("/urls");
 });
