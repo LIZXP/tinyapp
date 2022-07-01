@@ -30,16 +30,15 @@ app.get("/urls.json", (req, res) => {
 }); // this will turns the object into json file
 
 app.get("/", (req, res) => {
-  res.redirect("/login");
+  res.redirect("/urls");
 }); //set the main tag
 
-app.get("/urls", (req, res) => {
+app.get("/login", (req, res) => {
   const templateVars = {
-    urls: urlDatabase,
     user: users[req.cookies["user_id"]],
   };
-  res.render("urls_index", templateVars);
-}); //set the urls tag and have the ejs render in the views folder
+  res.render("urls_login", templateVars);
+});
 
 app.get("/register", (req, res) => {
   const templateVars = {
@@ -48,6 +47,14 @@ app.get("/register", (req, res) => {
   };
   res.render("urls_register", templateVars);
 });
+
+app.get("/urls", (req, res) => {
+  const templateVars = {
+    urls: urlDatabase,
+    user: users[req.cookies["user_id"]],
+  };
+  res.render("urls_index", templateVars);
+}); //set the urls tag and have the ejs render in the views folder
 
 app.get("/urls/new", (req, res) => {
   const templateVars = { user: users[req.cookies["user_id"]] };
@@ -71,7 +78,7 @@ app.get("/urls/:shortURL", (req, res) => {
 
 app.get("*", (req, res) => {
   res.redirect("/urls");
-}); //set the hello tag
+}); //anything else page request is redirct to main page
 
 app.post("/login", (req, res) => {
   res.cookie("username", req.body.username);
@@ -92,9 +99,10 @@ app.post("/register", (req, res) => {
   for (const userId in users) {
     if (users[userId].email === email) {
       foundUser = users[userId];
-    }
+    } // loop through the users object and find if there is value
   }
   if (foundUser) {
+    // if the same email found then we send 400 status code
     return res.status(400).send("the user is exists!");
   }
   const id = generateRandomString(); // generate random id
