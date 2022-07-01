@@ -85,6 +85,18 @@ app.post("/logout", (req, res) => {
 
 app.post("/register", (req, res) => {
   const { email, password } = req.body; // destructure the email and password from req.body
+  if (email === "" || password === "") {
+    return res.status(400).send("Please enter valid values!");
+  }
+  let foundUser;
+  for (const userId in users) {
+    if (users[userId].email === email) {
+      foundUser = users[userId];
+    }
+  }
+  if (foundUser) {
+    return res.status(400).send("the user is exists!");
+  }
   const id = generateRandomString(); // generate random id
   const newUser = {
     //put id email and password from POST request to an object
