@@ -77,6 +77,20 @@ app.post("/logout", (req, res) => {
   res.redirect("/urls");
 });
 
+app.post("/register", (req, res) => {
+  const { email, password } = req.body; // destructure the email and password from req.body
+  const id = generateRandomString(); // generate random id
+  const newUser = {
+    //put id email and password from POST request to an object
+    id,
+    email,
+    password,
+  };
+  users[id] = newUser; // assigned a random id as key to the new object.
+  res.cookie("user_id", id);
+  res.redirect("urls");
+});
+
 app.post("/urls/:shortURL", (req, res) => {
   const { shortURL } = req.params;
   let longURL = req.body.longURL;
