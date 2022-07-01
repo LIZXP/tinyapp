@@ -7,7 +7,8 @@ PORT = 8080;
 app.set("view engine", "ejs"); //set the ejs as view engine
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
-const users = {};
+
+const users = {}; //create empty object acting like date base to store the users information
 
 function generateRandomString() {
   let result = "";
@@ -24,7 +25,7 @@ const urlDatabase = {
   b2xVn2: "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com",
 };
-
+// GET
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 }); // this will turns the object into json file
@@ -80,8 +81,27 @@ app.get("*", (req, res) => {
   res.redirect("/urls");
 }); //anything else page request is redirct to main page
 
+//POST
 app.post("/login", (req, res) => {
-  res.cookie("username", req.body.username);
+  const { email, password } = req.body; // destructure the email and password from req.body
+  if (email === "" || password === "") {
+    return res.status(400).send("Please enter valid values!");
+  }
+  let foundUser;
+  for (const userId in users) {
+    if (users[userId].email === email) {
+      foundUser = users[userId];
+    } // loop through the users object and find if there is value
+  }
+  if (!foundUser) {
+    // if the no email found then we send 400 status code
+    return res.status(400).send("the user is not exists!");
+  } else if (foundUser.password !== password) {
+    // if password in users object is different than password enterd then show error
+    return res.status(400).send("incorrect password!");
+  }
+
+  res.cookie("user_id", foundUser.id);
   res.redirect("/urls");
 });
 
