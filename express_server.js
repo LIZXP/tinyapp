@@ -54,12 +54,20 @@ app.get("/urls", (req, res) => {
     urls: urlDatabase,
     user: users[req.cookies["user_id"]],
   };
-  res.render("urls_index", templateVars);
+  if (!req.cookies["user_id"]) {
+    res.redirect("/login");
+  } else {
+    res.render("urls_index", templateVars);
+  }
 }); //set the urls tag and have the ejs render in the views folder
 
 app.get("/urls/new", (req, res) => {
   const templateVars = { user: users[req.cookies["user_id"]] };
-  res.render("urls_new", templateVars);
+  if (!req.cookies["user_id"]) {
+    res.redirect("/login");
+  } else {
+    res.render("urls_new", templateVars);
+  }
 }); // generate a new short URL from a long URL
 
 app.get("/u/:shortURL", (req, res) => {
@@ -85,7 +93,10 @@ app.get("*", (req, res) => {
 app.post("/login", (req, res) => {
   const { email, password } = req.body; // destructure the email and password from req.body
   if (email === "" || password === "") {
-    return res.status(400).send("Please enter valid values!");
+    return res
+      .status(400)
+      .send("Please enter valid values!")
+      .redirect("/login");
   }
   let foundUser;
   for (const userId in users) {
@@ -95,10 +106,13 @@ app.post("/login", (req, res) => {
   }
   if (!foundUser) {
     // if the no email found then we send 400 status code
-    return res.status(400).send("the user is not exists!");
+    return res
+      .status(400)
+      .send("the user is not exists!")
+      .redirect("/register");
   } else if (foundUser.password !== password) {
     // if password in users object is different than password enterd then show error
-    return res.status(400).send("incorrect password!");
+    return res.status(400).send("incorrect password!").redirect("/login");
   }
 
   res.cookie("user_id", foundUser.id);
@@ -113,7 +127,10 @@ app.post("/logout", (req, res) => {
 app.post("/register", (req, res) => {
   const { email, password } = req.body; // destructure the email and password from req.body
   if (email === "" || password === "") {
-    return res.status(400).send("Please enter valid values!");
+    return res
+      .status(400)
+      .send("Please enter valid values!")
+      .redirect("/register");
   }
   let foundUser;
   for (const userId in users) {
@@ -123,7 +140,7 @@ app.post("/register", (req, res) => {
   }
   if (foundUser) {
     // if the same email found then we send 400 status code
-    return res.status(400).send("the user is exists!");
+    return res.status(400).send("the user is exists!").redirect("/register");
   }
   const id = generateRandomString(); // generate random id
   const newUser = {
