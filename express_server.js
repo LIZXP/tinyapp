@@ -22,8 +22,14 @@ function generateRandomString() {
 } // generate random number
 
 const urlDatabase = {
-  b2xVn2: "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com",
+  b6UTxQ: {
+    longURL: "https://www.tsn.ca",
+    userID: "aJ48lW",
+  },
+  i3BoGr: {
+    longURL: "https://www.google.ca",
+    userID: "aJ48lW",
+  },
 };
 // GET
 app.get("/urls.json", (req, res) => {
@@ -54,11 +60,7 @@ app.get("/urls", (req, res) => {
     urls: urlDatabase,
     user: users[req.cookies["user_id"]],
   };
-  if (!req.cookies["user_id"]) {
-    res.redirect("/login");
-  } else {
-    res.render("urls_index", templateVars);
-  }
+  res.render("urls_index", templateVars);
 }); //set the urls tag and have the ejs render in the views folder
 
 app.get("/urls/new", (req, res) => {
@@ -154,11 +156,19 @@ app.post("/register", (req, res) => {
   res.redirect("urls");
 });
 
+app.post("/urls", (req, res) => {
+  const longURL = req.body.longURL;
+  const userID = req.cookies["user_id"];
+  const shortURL = generateRandomString();
+  urlDatabase[shortURL] = { longURL, userID };
+  res.redirect(`/urls/${shortURL}`);
+});
+
 app.post("/urls/:shortURL", (req, res) => {
   const { shortURL } = req.params;
   let longURL = req.body.longURL;
   //console.log(req.body);
-  urlDatabase[shortURL] = longURL;
+  urlDatabase[shortURL].longURL = longURL;
   res.redirect("/urls/");
 }); // switch the new longURL fetched from req.body to replace the one in urlDatabase
 
