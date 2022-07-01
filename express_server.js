@@ -34,17 +34,23 @@ app.get("/", (req, res) => {
 }); //set the main tag
 
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase, username: req.cookies["username"] };
+  const templateVars = {
+    urls: urlDatabase,
+    user: users[req.cookies["user_id"]],
+  };
   res.render("urls_index", templateVars);
 }); //set the urls tag and have the ejs render in the views folder
 
 app.get("/register", (req, res) => {
-  const templateVars = { urls: urlDatabase, username: req.cookies["username"] };
+  const templateVars = {
+    urls: urlDatabase,
+    user: users[req.cookies["user_id"]],
+  };
   res.render("urls_register", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
-  const templateVars = { username: req.cookies["username"] };
+  const templateVars = { user: users[req.cookies["user_id"]] };
   res.render("urls_new", templateVars);
 }); // generate a new short URL from a long URL
 
@@ -58,7 +64,7 @@ app.get("/urls/:shortURL", (req, res) => {
   const templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL],
-    username: req.cookies["username"],
+    user: users[req.cookies["user_id"]],
   };
   res.render("urls_show", templateVars);
 });
@@ -73,7 +79,7 @@ app.post("/login", (req, res) => {
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("username");
+  res.clearCookie("user_id");
   res.redirect("/urls");
 });
 
