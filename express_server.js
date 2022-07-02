@@ -2,14 +2,16 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
+const bcrypt = require("bcryptjs");
 app = express();
 PORT = 8080;
 app.set("view engine", "ejs"); //set the ejs as view engine
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
+//create empty object acting like date base to store the users information
+const users = {};
 
-const users = {}; //create empty object acting like date base to store the users information
-
+// generate random number
 function generateRandomString() {
   let result = "";
   const characters =
@@ -19,7 +21,7 @@ function generateRandomString() {
     result += characters.charAt(Math.floor(Math.random() * charlen));
   }
   return result;
-} // generate random number
+}
 
 const urlsForUser = (id, database) => {
   let userUrls = {};
@@ -131,10 +133,9 @@ app.post("/login", (req, res) => {
     return res.status(403).send("the user is not exists!");
   }
   // if password in users object is different than password enterd then show error
-  else if (foundUser.password !== password) {
+  else if (!bcrypt.compareSync(password, foundUser.password)) {
     return res.status(403).send("incorrect password!");
   }
-
   res.cookie("user_id", foundUser.id);
   res.redirect("/urls");
 });
@@ -147,6 +148,8 @@ app.post("/logout", (req, res) => {
 app.post("/register", (req, res) => {
   // destructure the email and password from req.body
   const { email, password } = req.body;
+  // add salt combind with bcrypt to make it more secure
+  const salt = bcrypt.genSaltSync();
   if (email === "" || password === "") {
     return res.status(400).send("Please enter valid values!");
   }
@@ -167,7 +170,8 @@ app.post("/register", (req, res) => {
   const newUser = {
     id,
     email,
-    password,
+    //add hash to password using salt + bcrypt hash
+    password: bcrypt.hashSync(password, salt),
   };
   // assigned a random id as key to the new object.
   users[id] = newUser;
