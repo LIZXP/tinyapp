@@ -21,6 +21,16 @@ function generateRandomString() {
   return result;
 } // generate random number
 
+const urlsForUser = (id, database) => {
+  let userUrls = {};
+  for (const url in database) {
+    if (id === database[url].userID) {
+      userUrls[url] = database[url];
+    }
+  }
+  return userUrls;
+};
+
 const urlDatabase = {
   b6UTxQ: {
     longURL: "https://www.tsn.ca",
@@ -32,13 +42,16 @@ const urlDatabase = {
   },
 };
 // GET
+
+// this will turns the object into json file
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
-}); // this will turns the object into json file
+});
 
+//set the main tag
 app.get("/", (req, res) => {
   res.redirect("/urls");
-}); //set the main tag
+});
 
 app.get("/login", (req, res) => {
   const templateVars = {
@@ -54,15 +67,21 @@ app.get("/register", (req, res) => {
   };
   res.render("urls_register", templateVars);
 });
-
+//set the urls tag and have the ejs render in the views folder
 app.get("/urls", (req, res) => {
+  const userUrls = urlsForUser(req.cookies["user_id"], urlDatabase);
   const templateVars = {
-    urls: urlDatabase,
+    urls: userUrls,
     user: users[req.cookies["user_id"]],
   };
-  res.render("urls_index", templateVars);
-}); //set the urls tag and have the ejs render in the views folder
+  if (!req.cookies["user_id"]) {
+    res.redirect("/login");
+  } else {
+    res.render("urls_index", templateVars);
+  }
+});
 
+// generate a new short URL from a long URL
 app.get("/urls/new", (req, res) => {
   const templateVars = { user: users[req.cookies["user_id"]] };
   if (!req.cookies["user_id"]) {
@@ -70,13 +89,14 @@ app.get("/urls/new", (req, res) => {
   } else {
     res.render("urls_new", templateVars);
   }
-}); // generate a new short URL from a long URL
+});
 
 app.get("/u/:shortURL", (req, res) => {
   const { shortURL } = req.params;
   const longURL = urlDatabase[shortURL].longURL;
+  // redirect to the longURL page using shortURL
   res.redirect(longURL);
-}); // redirect to the longURL page using shortURL
+});
 
 app.get("/urls/:shortURL", (req, res) => {
   const templateVars = {
@@ -87,34 +107,32 @@ app.get("/urls/:shortURL", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
+//anything else page request is redirct to main page
 app.get("*", (req, res) => {
   res.redirect("/urls");
-}); //anything else page request is redirct to main page
+});
 
 //POST
 app.post("/login", (req, res) => {
-  const { email, password } = req.body; // destructure the email and password from req.body
+  // destructure the email and password from req.body
+  const { email, password } = req.body;
   if (email === "" || password === "") {
-    return res
-      .status(400)
-      .send("Please enter valid values!")
-      .redirect("/login");
+    return res.status(400).send("Please enter valid values!");
   }
   let foundUser;
+  // loop through the users object and find if there is value
   for (const userId in users) {
     if (users[userId].email === email) {
       foundUser = users[userId];
-    } // loop through the users object and find if there is value
+    }
   }
+  // if the no email found then we send 400 status code
   if (!foundUser) {
-    // if the no email found then we send 400 status code
-    return res
-      .status(400)
-      .send("the user is not exists!")
-      .redirect("/register");
-  } else if (foundUser.password !== password) {
-    // if password in users object is different than password enterd then show error
-    return res.status(400).send("incorrect password!").redirect("/login");
+    return res.status(403).send("the user is not exists!");
+  }
+  // if password in users object is different than password enterd then show error
+  else if (foundUser.password !== password) {
+    return res.status(403).send("incorrect password!");
   }
 
   res.cookie("user_id", foundUser.id);
@@ -127,35 +145,36 @@ app.post("/logout", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
-  const { email, password } = req.body; // destructure the email and password from req.body
+  // destructure the email and password from req.body
+  const { email, password } = req.body;
   if (email === "" || password === "") {
-    return res
-      .status(400)
-      .send("Please enter valid values!")
-      .redirect("/register");
+    return res.status(400).send("Please enter valid values!");
   }
   let foundUser;
+  // loop through the users object and find if there is value
   for (const userId in users) {
     if (users[userId].email === email) {
       foundUser = users[userId];
-    } // loop through the users object and find if there is value
+    }
   }
   if (foundUser) {
     // if the same email found then we send 400 status code
-    return res.status(400).send("the user is exists!").redirect("/register");
+    return res.status(400).send("the user is exists!");
   }
-  const id = generateRandomString(); // generate random id
+  // generate random id
+  const id = generateRandomString();
+  //put id email and password from POST request to an object
   const newUser = {
-    //put id email and password from POST request to an object
     id,
     email,
     password,
   };
-  users[id] = newUser; // assigned a random id as key to the new object.
+  // assigned a random id as key to the new object.
+  users[id] = newUser;
   res.cookie("user_id", id);
   res.redirect("urls");
 });
-
+// switch the new longURL fetched from req.body to replace the one in urlDatabase
 app.post("/urls", (req, res) => {
   const longURL = req.body.longURL;
   const userID = req.cookies["user_id"];
@@ -163,21 +182,20 @@ app.post("/urls", (req, res) => {
   urlDatabase[shortURL] = { longURL, userID };
   res.redirect(`/urls/${shortURL}`);
 });
-
+//edit function
 app.post("/urls/:shortURL", (req, res) => {
   const { shortURL } = req.params;
   let longURL = req.body.longURL;
-  //console.log(req.body);
   urlDatabase[shortURL].longURL = longURL;
   res.redirect("/urls/");
-}); // switch the new longURL fetched from req.body to replace the one in urlDatabase
-
+});
+//Use Javascript's delete operator to remove the URL
 app.post("/urls/:shortURL/delete", (req, res) => {
   const { shortURL } = req.params;
   delete urlDatabase[shortURL];
   res.redirect("/urls");
-}); //Use Javascript's delete operator to remove the URL
-
+});
+// start the server and listen to the PORT we set as 8080
 app.listen(PORT, () => {
   console.log("Server is listening on PORT: ", PORT);
-}); // start the server and listen to the PORT we set as 8080
+});
