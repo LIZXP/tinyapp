@@ -1,13 +1,18 @@
 //import external modules
 const express = require("express");
 const bodyParser = require("body-parser");
-const cookieParser = require("cookie-parser");
+const cookieSession = require("cookie-session");
 const bcrypt = require("bcryptjs");
 app = express();
 PORT = 8080;
 app.set("view engine", "ejs"); //set the ejs as view engine
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(cookieParser());
+app.use(
+  cookieSession({
+    name: "session",
+    keys: ["supergoodsite"],
+  })
+);
 //create empty object acting like date base to store the users information
 const users = {};
 
