@@ -139,7 +139,7 @@ app.post("/register", (req, res) => {
   const { email, password } = req.body;
   // add salt combind with bcrypt to make it more secure
   const salt = bcrypt.genSaltSync();
-  const userEmail = getUserByEmail(email, users);
+  const user = getUserByEmail(email, users);
   if (email === "" || password === "") {
     return res.status(400).send("Please enter valid values!");
   }
@@ -150,7 +150,7 @@ app.post("/register", (req, res) => {
       foundUser = users[userId];
     }
   }
-  if (userEmail === email) {
+  if (user.email === email) {
     // if the same email found then we send 400 status code
     return res.status(400).send("the user is exists!");
   }
