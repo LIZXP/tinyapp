@@ -118,11 +118,11 @@ app.post("/login", (req, res) => {
   }
   // if the no email found then we send 400 status code
   if (!foundUser) {
-    return res.status(403).send("the user is not exists!");
+    return res.status(404).send("the user is not exists!");
   }
   // if password in users object is different than password enterd then show error
   else if (!bcrypt.compareSync(password, foundUser.password)) {
-    return res.status(403).send("incorrect password!");
+    return res.status(404).send("incorrect password!");
   }
   req.session.userID = foundUser.id;
   res.redirect("/urls");
