@@ -62,7 +62,7 @@ app.get("/", (req, res) => {
 
 app.get("/login", (req, res) => {
   const templateVars = {
-    user: users[req.cookies["user_id"]],
+    user: users[req.session.userID],
   };
   res.render("urls_login", templateVars);
 });
@@ -70,18 +70,18 @@ app.get("/login", (req, res) => {
 app.get("/register", (req, res) => {
   const templateVars = {
     urls: urlDatabase,
-    user: users[req.cookies["user_id"]],
+    user: users[req.session.userID],
   };
   res.render("urls_register", templateVars);
 });
 //set the urls tag and have the ejs render in the views folder
 app.get("/urls", (req, res) => {
-  const userUrls = urlsForUser(req.cookies["user_id"], urlDatabase);
+  const userUrls = urlsForUser(req.session.userID, urlDatabase);
   const templateVars = {
     urls: userUrls,
-    user: users[req.cookies["user_id"]],
+    user: users[req.session.userID],
   };
-  if (!req.cookies["user_id"]) {
+  if (!req.session.userID) {
     res.redirect("/login");
   } else {
     res.render("urls_index", templateVars);
@@ -90,8 +90,8 @@ app.get("/urls", (req, res) => {
 
 // generate a new short URL from a long URL
 app.get("/urls/new", (req, res) => {
-  const templateVars = { user: users[req.cookies["user_id"]] };
-  if (!req.cookies["user_id"]) {
+  const templateVars = { user: users[req.session.userID] };
+  if (!req.session.userID) {
     res.redirect("/login");
   } else {
     res.render("urls_new", templateVars);
@@ -109,7 +109,7 @@ app.get("/urls/:shortURL", (req, res) => {
   const templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL],
-    user: users[req.cookies["user_id"]],
+    user: users[req.session.userID],
   };
   res.render("urls_show", templateVars);
 });
@@ -141,12 +141,13 @@ app.post("/login", (req, res) => {
   else if (!bcrypt.compareSync(password, foundUser.password)) {
     return res.status(403).send("incorrect password!");
   }
-  res.cookie("user_id", foundUser.id);
+  req.session.userID = foundUser.id;
   res.redirect("/urls");
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("user_id");
+  res.clearCookie("session");
+  res.clearCookie("session.sig");
   res.redirect("/urls");
 });
 
@@ -180,13 +181,13 @@ app.post("/register", (req, res) => {
   };
   // assigned a random id as key to the new object.
   users[id] = newUser;
-  res.cookie("user_id", id);
+  req.session.userID = id;
   res.redirect("urls");
 });
 // switch the new longURL fetched from req.body to replace the one in urlDatabase
 app.post("/urls", (req, res) => {
   const longURL = req.body.longURL;
-  const userID = req.cookies["user_id"];
+  const userID = req.session.userID;
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = { longURL, userID };
   res.redirect(`/urls/${shortURL}`);
