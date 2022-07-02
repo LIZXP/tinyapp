@@ -1,4 +1,9 @@
 //import external modules
+const {
+  generateRandomString,
+  urlsForUser,
+  getUserByEmail,
+} = require("./helpers");
 const express = require("express");
 const bodyParser = require("body-parser");
 const cookieSession = require("cookie-session");
@@ -15,28 +20,6 @@ app.use(
 );
 //create empty object acting like date base to store the users information
 const users = {};
-
-// generate random number
-function generateRandomString() {
-  let result = "";
-  const characters =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  const charlen = characters.length;
-  for (let i = 0; i < 6; i++) {
-    result += characters.charAt(Math.floor(Math.random() * charlen));
-  }
-  return result;
-}
-
-const urlsForUser = (id, database) => {
-  let userUrls = {};
-  for (const url in database) {
-    if (id === database[url].userID) {
-      userUrls[url] = database[url];
-    }
-  }
-  return userUrls;
-};
 
 const urlDatabase = {
   b6UTxQ: {
@@ -156,6 +139,7 @@ app.post("/register", (req, res) => {
   const { email, password } = req.body;
   // add salt combind with bcrypt to make it more secure
   const salt = bcrypt.genSaltSync();
+  const userEmail = getUserByEmail(email, users);
   if (email === "" || password === "") {
     return res.status(400).send("Please enter valid values!");
   }
@@ -166,7 +150,7 @@ app.post("/register", (req, res) => {
       foundUser = users[userId];
     }
   }
-  if (foundUser) {
+  if (userEmail === email) {
     // if the same email found then we send 400 status code
     return res.status(400).send("the user is exists!");
   }
@@ -190,7 +174,7 @@ app.post("/urls", (req, res) => {
   const userID = req.session.userID;
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = { longURL, userID };
-  res.redirect(`/urls/${shortURL}`);
+  res.redirect("/urls");
 });
 //edit function
 app.post("/urls/:shortURL", (req, res) => {
