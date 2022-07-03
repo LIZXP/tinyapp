@@ -89,12 +89,10 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
+  //check if there is a user
   if (!req.session.userID) {
-    res.status(404).send("Please login or register first.");
     res.redirect("/login");
-  } else if (urlDatabase[req.params.shortURL].userID !== req.session.userID) {
-    res.status(401).send("Access denied, only access of your own link.");
-    res.redirect("/login");
+    // check if the user id is match then show the page to the user logged in
   } else if (urlDatabase[req.params.shortURL].userID === req.session.userID) {
     const templateVars = {
       shortURL: req.params.shortURL,
@@ -102,9 +100,18 @@ app.get("/urls/:shortURL", (req, res) => {
       user: users[req.session.userID],
     };
     res.render("urls_show", templateVars);
+    //if the user is not match to the ower's id for this page then redirect
+  } else if (urlDatabase[req.params.shortURL].userID !== req.session.userID) {
+    res
+      .status(401)
+      .send(
+        "Access denied, only authorized person owned this link allowed to access"
+      );
+    res.redirect("/login");
+    //if the page is not found then show the message
   } else if (!urlDatabase[req.params.shortURL]) {
     res.status(400).send("Page not found");
-    res.redirect("/urls");
+    res.redirect("/login");
   } else {
     res.redirect("/login");
   }
