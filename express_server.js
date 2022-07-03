@@ -59,24 +59,24 @@ app.get("/register", (req, res) => {
 });
 //set the urls tag and have the ejs render in the views folder
 app.get("/urls", (req, res) => {
-  const userUrls = urlsForUser(req.session.userID, urlDatabase);
-  const templateVars = {
-    urls: userUrls,
-    user: users[req.session.userID],
-  };
   if (!req.session.userID) {
     res.redirect("/login");
   } else {
+    const userUrls = urlsForUser(req.session.userID, urlDatabase);
+    const templateVars = {
+      urls: userUrls,
+      user: users[req.session.userID],
+    };
     res.render("urls_index", templateVars);
   }
 });
 
 // generate a new short URL from a long URL
 app.get("/urls/new", (req, res) => {
-  const templateVars = { user: users[req.session.userID] };
   if (!req.session.userID) {
     res.redirect("/login");
   } else {
+    const templateVars = { user: users[req.session.userID] };
     res.render("urls_new", templateVars);
   }
 });
@@ -89,12 +89,25 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = {
-    shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL],
-    user: users[req.session.userID],
-  };
-  res.render("urls_show", templateVars);
+  if (!req.session.userID) {
+    res.status(404).send("Please login or register first.");
+    res.redirect("/login");
+  } else if (urlDatabase[req.params.shortURL].userID !== req.session.userID) {
+    res.status(401).send("Access denied, only access of your own link.");
+    res.redirect("/login");
+  } else if (urlDatabase[req.params.shortURL].userID === req.session.userID) {
+    const templateVars = {
+      shortURL: req.params.shortURL,
+      longURL: urlDatabase[req.params.shortURL],
+      user: users[req.session.userID],
+    };
+    res.render("urls_show", templateVars);
+  } else if (!urlDatabase[req.params.shortURL]) {
+    res.status(400).send("Page not found");
+    res.redirect("/urls");
+  } else {
+    res.redirect("/login");
+  }
 });
 
 //anything else page request is redirct to main page
